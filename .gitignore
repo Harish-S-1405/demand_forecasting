@@ -1,0 +1,10 @@
+# Python environment: rebuild with  pip install -r requirements.txt
+.venv/
+
+# Data and results: too big for git, and rebuildable from code
+data/
+outputs/
+
+# Temporary files Python and Jupyter create
+__pycache__/
+.ipynb_checkpoints/
