@@ -8,3 +8,7 @@ outputs/
 # Temporary files Python and Jupyter create
 __pycache__/
 .ipynb_checkpoints/
+
+# Local landing area (stands in for S3) and packaging leftovers
+landing/
+*.egg-info/
