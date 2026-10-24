@@ -35,11 +35,17 @@ DEFAULT_PROFILE = {-1: 0.04, 0: 0.06}                            # ordinary holi
 CARNIVAL_STRENGTH = {"Sudeste": 1.0, "Sul": 0.6, "Nordeste": 1.3}
 YEAR_STRENGTH = {("Carnaval", 2021): 0.2}                        # 2021 street Carnival cancelled
 HOLIDAY_MULT_RANGE = (0.6, 1.8)
+WEEK_EPOCH = pd.Timestamp("2000-01-03")      # a Monday; week numbers count from here
 
 
 def week_start(dates):
     """Monday of the Monday-Sunday week each date falls in."""
     return dates - pd.to_timedelta(dates.dt.day_of_week, unit="D")
+
+def week_number(week_starts):
+    """Weeks since 2000-01-03: a stable integer per week, used in random seeds."""
+    return (week_starts - WEEK_EPOCH) // pd.Timedelta(weeks=1)
+
 
 
 def easter_sunday(year):

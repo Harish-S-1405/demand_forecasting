@@ -7,6 +7,7 @@ from demandfcst.synthetic.calendar import (
     easter_sunday,
     holiday_calendar,
     holiday_multipliers,
+    week_number,
 )
 
 PROVINCES = pd.DataFrame({"province": ["SP", "RS", "BA"], "region": ["Sudeste", "Sul", "Nordeste"]})
@@ -46,3 +47,9 @@ def test_carnival_preload_strongest_in_nordeste():
     mult = holiday_multipliers(hol, PROVINCES).set_index(["province", "week_start"])["holiday_mult"]
     week_before = pd.Timestamp("2023-02-13")              # Carnival 2023 = week of 20 Feb
     assert mult[("BA", week_before)] > mult[("SP", week_before)] > mult[("RS", week_before)]
+
+def test_week_number_counts_weeks_from_2000_01_03():
+    assert week_number(pd.Timestamp("2000-01-03")) == 0
+    assert week_number(pd.Timestamp("2000-01-10")) == 1
+    assert week_number(pd.Timestamp("2025-01-06")) - week_number(pd.Timestamp("2024-12-30")) == 1
+
