@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "demandfcst"
+version = "0.1.0"
+description = "Weekly demand forecasting for a beverage company"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.2",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

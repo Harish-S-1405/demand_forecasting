@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+src/demandfcst/__init__.py
+src/demandfcst.egg-info/PKG-INFO
+src/demandfcst.egg-info/SOURCES.txt
+src/demandfcst.egg-info/dependency_links.txt
+src/demandfcst.egg-info/requires.txt
+src/demandfcst.egg-info/top_level.txt
+src/demandfcst/synthetic/__init__.py
