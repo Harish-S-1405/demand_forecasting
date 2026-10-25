@@ -26,9 +26,9 @@ stages:
     outs:
     - path: data/raw
       hash: md5
-      md5: 90a2f6db02bbf6bfd12841c4afc4d9e9.dir
-      size: 6619041
-      nfiles: 54
+      md5: e8fa78eac57a18c32d838444d9d8a6cd.dir
+      size: 6649903
+      nfiles: 58
   process:
     cmd: python scripts/phase3_pipeline/process.py
     deps:
@@ -38,9 +38,9 @@ stages:
       size: 1001
     - path: data/raw
       hash: md5
-      md5: 90a2f6db02bbf6bfd12841c4afc4d9e9.dir
-      size: 6619041
-      nfiles: 54
+      md5: e8fa78eac57a18c32d838444d9d8a6cd.dir
+      size: 6649903
+      nfiles: 58
     - path: scripts/phase3_pipeline/process.py
       hash: md5
       md5: 10ee76387d868e366cc2c6446d940ccb
@@ -53,6 +53,6 @@ stages:
     outs:
     - path: data/processed
       hash: md5
-      md5: ef6319f8978ecc5e446fbd65600cb48f.dir
-      size: 12123594
+      md5: a432375a00bb9abf34c7d655eeaa9ea8.dir
+      size: 12179210
       nfiles: 18
