@@ -49,3 +49,14 @@ def read_text(location):
     fs, path = fs_for(location)
     with fs.open(path, "r", encoding="utf-8") as f:
         return f.read()
+
+def touch(location):
+    """Create an empty file, e.g. a _SUCCESS marker."""
+    write_text(location, "")
+
+
+def remove(location):
+    """Delete a file, or a folder with everything in it. No error if it doesn't exist."""
+    fs, path = fs_for(location)
+    if fs.exists(path):
+        fs.rm(path, recursive=True)

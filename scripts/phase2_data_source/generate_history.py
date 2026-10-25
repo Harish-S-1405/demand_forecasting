@@ -1,9 +1,10 @@
 """Generate the synthetic sell-in history and write it as the first landing drop.
 
 Where it writes (local folders or S3) comes from configs/data.toml.
+Every dataset gets a _SUCCESS marker after all files are written (contract v1.1).
 Run from the project root:
-    python scripts/generate_history.py                  # storage from the config
-    python scripts/generate_history.py --storage local  # override
+    python scripts/phase2_data_source/generate_history.py                  # storage from the config
+    python scripts/phase2_data_source/generate_history.py --storage local  # override
 """
 
 import argparse
@@ -55,6 +56,25 @@ def main():
     sales, promos = demand.generate_daily(HISTORY_START, HISTORY_END, cat, wx, args.seed)
     log.info("sales: %d daily rows, %.0f HL in total, %d promotions",
              len(sales), sales["volume_hl"].sum(), len(promos))
+
+    outputs = [
+        (sales, loc["landing"], "sellin_daily"),
+        (wx[weather.WEATHER_COLUMNS], loc["landing"], "weather_weekly"),
+        (landing.province_master(cat), loc["landing"], "province_master"),
+        (landing.sku_master(cat), loc["landing"], "sku_master"),
+        (calendar.holiday_calendar(*HOLIDAY_YEARS), loc["landing"], "holidays"),
+        (promos, loc["truth"], "promotions"),
+    ]
+    for df, root, dataset in outputs:
+        location = landing.write_drop(df, root, dataset, ingest)
+        log.info("wrote %s (%d rows)", location, len(df))
+
+    for _, root, dataset in reversed(outputs):            # sellin_daily is first in outputs -> marked last
+        landing.mark_complete(root, dataset, ingest)
+    log.info("marked %d drops complete (%s)", len(outputs), landing.SUCCESS)
+
+    log.info("done in %.1fs", time.perf_counter() - t0)
+
 
 if __name__ == "__main__":
     main()

@@ -19,10 +19,14 @@ WEATHER = "weather_weekly"
 PROMOS = "promotions"
 
 
-def drop_dates(root, dataset):
-    """ingest_date of every drop of a dataset, oldest first."""
+def drop_dates(root, dataset, complete_only=True):
+    """ingest_date of every drop of a dataset, oldest first (only complete drops by default)."""
     names = storage.list_dirs(storage.join(root, dataset), "ingest_date=*")
-    return sorted(pd.Timestamp(name.split("=", 1)[1]) for name in names)
+    dates = sorted(pd.Timestamp(name.split("=", 1)[1]) for name in names)
+    if complete_only:
+        dates = [d for d in dates if landing.is_complete(root, dataset, d)]
+    return dates
+
 
 
 
@@ -54,6 +58,11 @@ def release_next_week(landing_root, truth_root, params_path, weather_source):
     landing.write_drop(sales, landing_root, SALES, sunday)
     landing.write_drop(wx[weather.WEATHER_COLUMNS], landing_root, WEATHER, sunday)
     landing.write_drop(promos, truth_root, PROMOS, sunday)
+
+    landing.mark_complete(truth_root, PROMOS, sunday)
+    landing.mark_complete(landing_root, WEATHER, sunday)
+    landing.mark_complete(landing_root, SALES, sunday)        # last: now the week counts as released
+
     log.info("released %s .. %s: %d sales rows, %.0f HL, %d promotions",
              f"{monday:%Y-%m-%d}", f"{sunday:%Y-%m-%d}", len(sales), sales["volume_hl"].sum(), len(promos))
     return sunday

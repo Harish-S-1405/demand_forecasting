@@ -6,7 +6,14 @@ Drops are append-only: writing to an ingest_date that already exists is refused.
 <root> is a local folder or an S3 URL (see demandfcst.storage).
 """
 
+import logging
+
 from demandfcst import storage
+
+log = logging.getLogger(__name__)
+
+SUCCESS = "_SUCCESS"
+
 
 PROVINCE_MASTER_COLUMNS = ["province", "province_name", "region"]
 SKU_MASTER_COLUMNS = ["sku_id", "sku_name", "brand", "pack", "container", "size_ml",
@@ -16,14 +23,29 @@ SKU_MASTER_COLUMNS = ["sku_id", "sku_name", "brand", "pack", "container", "size_
 def drop_dir(root, dataset, ingest_date):
     return storage.join(root, dataset, f"ingest_date={ingest_date:%Y-%m-%d}")
 
+def is_complete(root, dataset, ingest_date):
+    """A drop counts as delivered only when its _SUCCESS marker exists."""
+    return storage.exists(storage.join(drop_dir(root, dataset, ingest_date), SUCCESS))
+
+
+def mark_complete(root, dataset, ingest_date):
+    """Write the _SUCCESS marker. Call only after every file of the drop has been written."""
+    storage.touch(storage.join(drop_dir(root, dataset, ingest_date), SUCCESS))
+
+
 
 def ensure_new_drop(root, datasets, ingest_date):
-    """Stop before generating anything if any of these datasets already has this drop."""
-    existing = [d for d in datasets if storage.exists(drop_dir(root, d, ingest_date))]
-    if existing:
+    """Refuse if a complete drop already exists; clear incomplete ones left by a crashed run."""
+    complete = [d for d in datasets if is_complete(root, d, ingest_date)]
+    if complete:
         raise FileExistsError(
-            f"ingest_date={ingest_date:%Y-%m-%d} already exists for {existing} under {root}. "
-            "Landing drops are append-only; delete them yourself only if you really mean to regenerate.")
+            f"ingest_date={ingest_date:%Y-%m-%d} is already delivered for {complete} under {root}. "
+            "Landing drops are append-only.")
+    for d in datasets:
+        folder = drop_dir(root, d, ingest_date)
+        if storage.exists(folder):
+            log.warning("removing incomplete drop %s (no %s marker: an earlier run crashed)", folder, SUCCESS)
+            storage.remove(folder)
 
 
 def write_drop(df, root, dataset, ingest_date, filename="part.csv"):

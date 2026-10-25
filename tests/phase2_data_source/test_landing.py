@@ -18,13 +18,24 @@ def test_write_drop_uses_contract_layout_and_iso_dates(tmp_path):
     assert b"2024-12-23,SP,00123,1.5" in raw                          # ISO date, code kept as text
 
 
-def test_second_write_to_same_drop_is_refused(tmp_path):
+def test_complete_drop_is_refused(tmp_path):
     df = pd.DataFrame({"a": [1]})
     landing.write_drop(df, tmp_path, "sellin_daily", INGEST)
-    with pytest.raises(FileExistsError):
+    with pytest.raises(FileExistsError):                              # same file twice
         landing.write_drop(df, tmp_path, "sellin_daily", INGEST)
-    with pytest.raises(FileExistsError):
+    landing.mark_complete(tmp_path, "sellin_daily", INGEST)
+    with pytest.raises(FileExistsError):                              # delivered drop
         landing.ensure_new_drop(tmp_path, ["sellin_daily"], INGEST)
+
+
+def test_incomplete_drop_is_cleared_for_a_rewrite(tmp_path):
+    landing.write_drop(pd.DataFrame({"a": [1]}), tmp_path, "sellin_daily", INGEST)   # crashed: no marker
+    assert not landing.is_complete(tmp_path, "sellin_daily", INGEST)
+    landing.ensure_new_drop(tmp_path, ["sellin_daily"], INGEST)                      # clears it
+    assert not landing.is_complete(tmp_path, "sellin_daily", INGEST)
+    landing.write_drop(pd.DataFrame({"a": [2]}), tmp_path, "sellin_daily", INGEST)   # rewrite works
+    landing.mark_complete(tmp_path, "sellin_daily", INGEST)
+    assert landing.is_complete(tmp_path, "sellin_daily", INGEST)
 
 
 def test_masters_have_exactly_the_contract_columns():
