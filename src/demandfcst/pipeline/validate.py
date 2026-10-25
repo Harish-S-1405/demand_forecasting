@@ -1,8 +1,8 @@
 """Business-rule validation of the typed raw tables (contract section 5).
 
 The reader already enforced the file-level contract (columns, types, encoding, empty
-values). Here we check rules across rows, drops and datasets. Every finding is an Issue:
-"error" stops processing, "warning" is kept in the report for a person to review.
+values). Here we check rules across rows, drops and datasets. Every check produces one row:
+"pass", "info" (allowed, noted), "warning" (a person should look) or "error" (stop processing).
 """
 
 from dataclasses import dataclass
@@ -19,14 +19,15 @@ DROP_EVERY = pd.Timedelta(days=7)
 
 @dataclass(frozen=True)
 class Issue:
-    level: str          # "error" | "warning"
+    level: str          # "pass" | "info" | "warning" | "error"
     dataset: str
     check: str
+    rows: int
     message: str
 
 
 class ValidationError(ValueError):
-    """Raised when the report contains errors. `report` holds every issue found."""
+    """Raised when the report contains errors. `report` holds every check's result."""
 
     def __init__(self, report):
         self.report = report
@@ -36,11 +37,11 @@ class ValidationError(ValueError):
 
 
 def _found(level, dataset, check, rows, what, cols):
-    """One Issue describing the offending rows (with up to 3 examples), or none if there are none."""
+    """The result of one check: "pass" if no rows break it, else `level` with a count and examples."""
     if len(rows) == 0:
-        return []
+        return [Issue("pass", dataset, check, 0, "ok")]
     examples = rows[cols].head(3).astype(str).to_dict("records")
-    return [Issue(level, dataset, check, f"{len(rows)} {what}, e.g. {examples}")]
+    return [Issue(level, dataset, check, len(rows), f"{len(rows)} {what}, e.g. {examples}")]
 
 
 def validate_masters(provinces, skus, holidays):
@@ -71,7 +72,7 @@ def validate_sales(sales, provinces, skus):
     issues += _found("error", d, "duplicate_in_drop", sales[in_drop],
                      "rows share a key within one drop", [*SALES_KEY, "ingest_date"])
     restated = sales.duplicated(SALES_KEY, keep=False) & ~in_drop
-    issues += _found("warning", d, "restated_rows", sales[restated],
+    issues += _found("info", d, "restated_rows", sales[restated],
                      "rows restate a day delivered in another drop (latest drop wins)", [*SALES_KEY, "ingest_date"])
     issues += _found("error", d, "volume_not_positive", sales[sales["volume_hl"] <= 0],
                      "rows with volume_hl <= 0", [*SALES_KEY, "volume_hl"])
@@ -141,16 +142,21 @@ def validate_cross(sales, weather):
 
 
 def validate(tables):
-    """Run every check on the tables from reader.read_all(). Returns the report; raises nothing."""
+    """Run every check on the tables from reader.read_all(). One row per check; raises nothing."""
     t = tables
     issues = (validate_masters(t["province_master"], t["sku_master"], t["holidays"])
               + validate_sales(t["sellin_daily"], t["province_master"], t["sku_master"])
               + validate_weather(t["weather_weekly"], t["province_master"])
               + validate_cross(t["sellin_daily"], t["weather_weekly"]))
-    return pd.DataFrame(issues, columns=["level", "dataset", "check", "message"])
+    return pd.DataFrame(issues, columns=["level", "dataset", "check", "rows", "message"])
+
+
+def problems(report):
+    """Only the checks that did not pass (info, warnings, errors)."""
+    return report[report["level"] != "pass"]
 
 
 def raise_if_errors(report):
-    """Stop the pipeline if the report has any error (warnings are allowed through)."""
+    """Stop the pipeline if the report has any error (info and warnings are allowed through)."""
     if (report["level"] == "error").any():
         raise ValidationError(report)

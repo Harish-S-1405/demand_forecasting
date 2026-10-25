@@ -1,23 +1,31 @@
-[build-system]
-requires = ["setuptools>=69"]
-build-backend = "setuptools.build_meta"
+# Project data configuration, read with Python's built-in tomllib.
 
-[project]
-name = "demandfcst"
-version = "0.1.0"
-description = "Weekly demand forecasting for a beverage company"
-requires-python = ">=3.11"
-dependencies = [
-    "numpy>=1.26",
-    "pandas>=2.2",
-    "fsspec>=2024.2",
-    "s3fs>=2024.2",
-    "pyarrow>=15",
-]
+# Where the landing area, generator files and reports live: "local" or "s3".
+storage = "s3"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[s3]
+bucket = "demandfcst-harish-1405"
+region = "<your-region>"                 # ← keep the value from your current file, e.g. ap-south-1
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
+# Where each area lives. Local paths are relative to the project folder;
+# "{bucket}" is replaced with the bucket name from [s3].
+[locations.local]
+landing = "landing"
+generator = "data/generator"
+truth = "data/truth"
+reports = "outputs/reports"
 
+[locations.s3]
+landing = "s3://{bucket}/landing"
+generator = "s3://{bucket}/generator"
+truth = "s3://{bucket}/truth"
+reports = "s3://{bucket}/reports"
+
+# The pipeline's working areas: always local (relative to the project), versioned with DVC.
+[pipeline]
+raw = "data/raw"
+processed = "data/processed"
+
+# Facts about the sales extract.
+[extract]
+sales_start = "2021-01-01"     # first day covered by the history delivery

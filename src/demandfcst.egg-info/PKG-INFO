@@ -8,3 +8,4 @@ Requires-Dist: pandas>=2.2
 Requires-Dist: fsspec>=2024.2
 Requires-Dist: s3fs>=2024.2
 Requires-Dist: pyarrow>=15
+Requires-Dist: openpyxl>=3.1

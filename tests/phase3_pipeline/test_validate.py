@@ -63,8 +63,26 @@ def backwards_lifecycle(t):
     t["sku_master"].loc[0, "discontinue_date"] = pd.Timestamp("2025-01-01")
 
 
-def test_clean_tables_have_no_issues():
-    assert validate.validate(clean()).empty
+def test_clean_tables_pass_every_check():
+    report = validate.validate(clean())
+    assert validate.problems(report).empty
+    assert (report["level"] == "pass").all()
+
+
+def test_every_check_is_listed_even_when_it_passes():
+    checks = set(validate.validate(clean())["check"])
+    assert {"duplicate_in_drop", "missing_drop", "missing_weather_week", "sales_without_weather"} <= checks
+    assert len(checks) >= 20
+
+
+def test_restatement_is_info_not_a_warning_or_error():
+    tables = clean()
+    correction = tables["sellin_daily"].iloc[[0]].assign(volume_hl=1.2, ingest_date=W2)
+    tables["sellin_daily"] = pd.concat([tables["sellin_daily"], correction], ignore_index=True)
+    found = validate.problems(validate.validate(tables))
+    assert list(found["check"]) == ["restated_rows"]
+    assert (found["level"] == "info").all()
+
 
 
 @pytest.mark.parametrize("break_it, check", [
@@ -84,13 +102,6 @@ def test_each_rule_catches_its_problem(break_it, check):
     assert check in set(report.loc[report["level"] == "error", "check"])
 
 
-def test_restatement_is_a_warning_not_an_error():
-    tables = clean()
-    correction = tables["sellin_daily"].iloc[[0]].assign(volume_hl=1.2, ingest_date=W2)   # day re-sent later
-    tables["sellin_daily"] = pd.concat([tables["sellin_daily"], correction], ignore_index=True)
-    report = validate.validate(tables)
-    assert list(report["check"]) == ["restated_rows"]
-    assert (report["level"] == "warning").all()
 
 
 def test_errors_stop_the_pipeline_warnings_do_not():
