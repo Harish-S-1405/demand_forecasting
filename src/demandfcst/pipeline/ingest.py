@@ -17,19 +17,13 @@ log = logging.getLogger(__name__)
 DATASETS = ["sellin_daily", "weather_weekly", "province_master", "sku_master", "holidays"]
 
 
-def drop_files(root, dataset, ingest_date):
-    """Data files of a drop: everything except the _SUCCESS marker."""
-    names = storage.list_files(drops.drop_dir(root, dataset, ingest_date))
-    return [n for n in names if n != drops.SUCCESS]
-
-
 def ingest_drop(landing_root, raw_root, dataset, ingest_date):
     """Copy one complete drop into raw, then mark it complete there. Returns bytes copied."""
     src = drops.drop_dir(landing_root, dataset, ingest_date)
     dst = drops.drop_dir(raw_root, dataset, ingest_date)
     storage.remove(dst)                                     # clears a copy left by a crashed run
     copied = 0
-    for name in drop_files(landing_root, dataset, ingest_date):
+    for name in drops.data_files(landing_root, dataset, ingest_date):
         copied += storage.copy_file(storage.join(src, name), storage.join(dst, name))
     drops.mark_complete(raw_root, dataset, ingest_date)     # last: the raw copy is complete
     return copied

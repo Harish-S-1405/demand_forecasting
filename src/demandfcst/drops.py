@@ -24,6 +24,11 @@ def mark_complete(root, dataset, ingest_date):
     """Write the _SUCCESS marker. Call only after every file of the drop has been written."""
     storage.touch(storage.join(drop_dir(root, dataset, ingest_date), SUCCESS))
 
+def data_files(root, dataset, ingest_date):
+    """Names of a drop's data files: everything except the _SUCCESS marker."""
+    return [n for n in storage.list_files(drop_dir(root, dataset, ingest_date)) if n != SUCCESS]
+
+
 
 def drop_dates(root, dataset, complete_only=True):
     """ingest_date of every drop of a dataset, oldest first (only complete drops by default)."""
