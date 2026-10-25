@@ -12,6 +12,9 @@ import pandas as pd
 
 from demandfcst.synthetic import catalog, demand, landing, weather
 
+from demandfcst.drops import drop_dates  # noqa: F401 (re-exported)
+
+
 log = logging.getLogger(__name__)
 
 SALES = "sellin_daily"
@@ -19,13 +22,6 @@ WEATHER = "weather_weekly"
 PROMOS = "promotions"
 
 
-def drop_dates(root, dataset, complete_only=True):
-    """ingest_date of every drop of a dataset, oldest first (only complete drops by default)."""
-    names = storage.list_dirs(storage.join(root, dataset), "ingest_date=*")
-    dates = sorted(pd.Timestamp(name.split("=", 1)[1]) for name in names)
-    if complete_only:
-        dates = [d for d in dates if landing.is_complete(root, dataset, d)]
-    return dates
 
 
 

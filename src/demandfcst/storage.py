@@ -66,3 +66,20 @@ def read_head(location, n):
     fs, path = fs_for(location)
     with fs.open(path, "rb", block_size=1024) as f:
         return f.read(n)
+
+def list_files(location):
+    """Names of the files directly inside a folder, sorted."""
+    fs, path = fs_for(location)
+    return sorted(p.rstrip("/").split("/")[-1] for p in fs.ls(path, detail=False) if fs.isfile(p))
+
+
+def copy_file(src, dst):
+    """Copy a file byte for byte between any two locations (e.g. S3 -> local). Returns bytes copied."""
+    src_fs, src_path = fs_for(src)
+    dst_fs, dst_path = fs_for(dst)
+    dst_fs.makedirs(dst_path.rsplit("/", 1)[0], exist_ok=True)
+    with src_fs.open(src_path, "rb") as fin:
+        data = fin.read()
+    with dst_fs.open(dst_path, "wb") as fout:
+        fout.write(data)
+    return len(data)

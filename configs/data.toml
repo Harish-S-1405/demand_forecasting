@@ -19,3 +19,9 @@ truth = "data/truth"
 landing = "s3://{bucket}/landing"
 generator = "s3://{bucket}/generator"
 truth = "s3://{bucket}/truth"
+
+# The pipeline's working areas: always local (relative to the project), versioned with DVC.
+[pipeline]
+raw = "data/raw"
+processed = "data/processed"
+

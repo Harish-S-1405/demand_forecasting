@@ -25,3 +25,8 @@ def locations(config=None, storage=None):
         loc = loc.format(bucket=config["s3"]["bucket"])
         out[area] = loc if "://" in loc else (PROJECT_ROOT / loc).as_posix()
     return out
+
+def pipeline_paths(config=None):
+    """Absolute local paths of the pipeline's working areas (raw, processed)."""
+    config = config or load_config()
+    return {area: (PROJECT_ROOT / rel).as_posix() for area, rel in config["pipeline"].items()}

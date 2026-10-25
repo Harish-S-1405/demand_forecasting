@@ -9,28 +9,17 @@ Drops are append-only: writing to an ingest_date that already exists is refused.
 import logging
 
 from demandfcst import storage
+from demandfcst.drops import SUCCESS, drop_dir, is_complete, mark_complete  # noqa: F401 (re-exported)
+
 
 log = logging.getLogger(__name__)
 
-SUCCESS = "_SUCCESS"
+
 
 
 PROVINCE_MASTER_COLUMNS = ["province", "province_name", "region"]
 SKU_MASTER_COLUMNS = ["sku_id", "sku_name", "brand", "pack", "container", "size_ml",
                       "units_per_case", "returnable", "launch_date", "discontinue_date"]
-
-
-def drop_dir(root, dataset, ingest_date):
-    return storage.join(root, dataset, f"ingest_date={ingest_date:%Y-%m-%d}")
-
-def is_complete(root, dataset, ingest_date):
-    """A drop counts as delivered only when its _SUCCESS marker exists."""
-    return storage.exists(storage.join(drop_dir(root, dataset, ingest_date), SUCCESS))
-
-
-def mark_complete(root, dataset, ingest_date):
-    """Write the _SUCCESS marker. Call only after every file of the drop has been written."""
-    storage.touch(storage.join(drop_dir(root, dataset, ingest_date), SUCCESS))
 
 
 
