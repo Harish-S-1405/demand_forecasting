@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 from demandfcst import storage
-from demandfcst.synthetic import catalog, demand, landing, release, weather
+from demandfcst.synthetic import catalog, demand, landing, release, weather,corrections
 
 SEED = 42
 HISTORY_END = pd.Timestamp("2024-12-29")
@@ -84,3 +84,19 @@ def test_crashed_release_is_redone(setup):
     sales = read_sales(setup["landing"], crashed)
     assert "volume_hl" in sales.columns and len(sales) > 0
     assert landing.is_complete(setup["landing"], "sellin_daily", crashed)
+
+def test_correction_rows_restate_real_earlier_days(setup):
+    ingest = release.release_next_week(setup["landing"], setup["truth"], setup["params"],
+                                       setup["source"], correction_prob=1.0)
+    sales = read_sales(setup["landing"], ingest)
+    week_start = ingest - pd.Timedelta(days=6)
+    restated = sales[sales["date"] < week_start]
+    assert 1 <= len(restated) <= corrections.MAX_ROWS
+
+    start = week_start - pd.Timedelta(weeks=corrections.LOOKBACK_WEEKS)
+    wx = weather.weekly_weather(setup["source"], setup["cat"]["provinces"], start, ingest, SEED)
+    original, _ = demand.generate_daily(start, week_start - pd.Timedelta(days=1), setup["cat"], wx, SEED)
+    both = restated.merge(original, on=["date", "province", "sku_id"], suffixes=("_new", "_old"))
+    assert len(both) == len(restated)                          # every correction targets a delivered day
+    assert (both["volume_hl_new"] != both["volume_hl_old"]).any()
+    assert landing.is_complete(setup["truth"], "corrections", ingest)
