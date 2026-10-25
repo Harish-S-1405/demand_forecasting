@@ -83,3 +83,17 @@ def copy_file(src, dst):
     with dst_fs.open(dst_path, "wb") as fout:
         fout.write(data)
     return len(data)
+
+def write_parquet(df, location):
+    """Write a DataFrame as Parquet (types kept exactly), creating parent folders."""
+    fs, path = fs_for(location)
+    fs.makedirs(path.rsplit("/", 1)[0], exist_ok=True)
+    with fs.open(path, "wb") as f:
+        df.to_parquet(f, index=False)
+
+
+def move(src, dst):
+    """Move a file or folder (dst must not exist yet)."""
+    fs, src_path = fs_for(src)
+    _, dst_path = fs_for(dst)
+    fs.mv(src_path, dst_path, recursive=True)
