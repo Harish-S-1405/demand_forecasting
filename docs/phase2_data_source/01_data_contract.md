@@ -1,6 +1,7 @@
-# Data Contract: Sell-in Sales (v1.1)
+# Data Contract: Sell-in Sales (v1.2)
 
-Status: v1.1, 2026-10-25
+Status: v1.2, 2026-10-25
+
 
 Producer: synthetic generator (`src/`), later replaced by the real sell-in extract
 Consumer: demandfcst processing pipeline
@@ -120,7 +121,8 @@ Real values up to 2024-10-28; synthetic (climate normal + variation) after that.
 ## 5. Validation checks (run on every new drop)
 1. Columns exactly as listed, in any order; no extra or missing columns.
 2. Types parse (dates, numbers); no empty values in key columns.
-3. No duplicate primary keys, within the drop or against earlier drops.
+3. No duplicate keys within a drop. A later drop may restate days delivered by an
+   earlier drop (a correction); the row from the latest drop wins.
 4. `volume_hl` > 0 in daily data.
 5. Every `province` and `sku_id` exists in the masters.
 6. Dates fall inside the drop's declared range; the drop continues directly after the previous one (no gaps).
@@ -135,5 +137,6 @@ Real values up to 2024-10-28; synthetic (climate normal + variation) after that.
 - The real data must pass every rule above before it replaces the synthetic data.
 
 ## 7. Changelog
+- v1.2 (2026-10-25): later drops may restate earlier days (corrections); latest drop wins.
 - v1.1 (2026-10-25): `_SUCCESS` marker per drop; incomplete drops may be rewritten by the producer.
 - v1.0 (2026-10-24): first version.

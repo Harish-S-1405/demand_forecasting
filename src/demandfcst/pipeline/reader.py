@@ -53,3 +53,13 @@ def read_latest(root, dataset):
     if problems:
         raise schema.SchemaError(dataset, problems)
     return pd.concat(tables, ignore_index=True).assign(ingest_date=dates[-1])
+
+EVENT_DATASETS = ["sellin_daily", "weather_weekly"]
+SNAPSHOT_DATASETS = ["province_master", "sku_master", "holidays"]
+
+
+def read_all(root):
+    """Every contract table from raw: event datasets stacked, snapshots from their latest drop."""
+    tables = {name: read_dataset(root, name) for name in EVENT_DATASETS}
+    tables.update({name: read_latest(root, name) for name in SNAPSHOT_DATASETS})
+    return tables
