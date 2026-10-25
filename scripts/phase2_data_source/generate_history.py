@@ -55,3 +55,6 @@ def main():
     sales, promos = demand.generate_daily(HISTORY_START, HISTORY_END, cat, wx, args.seed)
     log.info("sales: %d daily rows, %.0f HL in total, %d promotions",
              len(sales), sales["volume_hl"].sum(), len(promos))
+
+if __name__ == "__main__":
+    main()

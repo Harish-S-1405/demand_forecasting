@@ -91,7 +91,9 @@ Real values up to 2024-10-28; synthetic (climate normal + variation) after that.
 | Sul | RS (Rio Grande do Sul), PR (Paraná), SC (Santa Catarina) |
 | Nordeste | BA (Bahia), PE (Pernambuco), CE (Ceará) |
 
-- Products: 40 SKUs; about 280 active province x SKU combinations.
+- Products: 40 SKUs; about 230 active province x SKU combinations.
+
+
 
 ## 4. Landing layout
     landing/
