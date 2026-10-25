@@ -1,0 +1,58 @@
+schema: '2.0'
+stages:
+  ingest:
+    cmd: python scripts/phase3_pipeline/ingest.py
+    deps:
+    - path: configs/data.toml
+      hash: md5
+      md5: 75041f12595501539b5a22e02e9918f6
+      size: 1001
+    - path: scripts/phase3_pipeline/ingest.py
+      hash: md5
+      md5: 0e776fbe96cfaf92fd6a0cdfaada5dd0
+      size: 1042
+    - path: src/demandfcst/drops.py
+      hash: md5
+      md5: 9e53d6e161ad2e646fb618c3478cdac6
+      size: 1549
+    - path: src/demandfcst/pipeline/ingest.py
+      hash: md5
+      md5: 38f9b6db3facd7bbd04983d282f6bfde
+      size: 2100
+    - path: src/demandfcst/storage.py
+      hash: md5
+      md5: 7ab06464a91d74f5dfbff2a2fdcb7c32
+      size: 3416
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: ea3f0184394c4bb0c5efad32c1463e03.dir
+      size: 6588367
+      nfiles: 50
+  process:
+    cmd: python scripts/phase3_pipeline/process.py
+    deps:
+    - path: configs/data.toml
+      hash: md5
+      md5: 75041f12595501539b5a22e02e9918f6
+      size: 1001
+    - path: data/raw
+      hash: md5
+      md5: ea3f0184394c4bb0c5efad32c1463e03.dir
+      size: 6588367
+      nfiles: 50
+    - path: scripts/phase3_pipeline/process.py
+      hash: md5
+      md5: 10ee76387d868e366cc2c6446d940ccb
+      size: 1390
+    - path: src/demandfcst/pipeline
+      hash: md5
+      md5: 9efc9436a9378ca0293e81c475453cba.dir
+      size: 110040
+      nfiles: 20
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: 132381fdc6d1c87792c907dfcc809934.dir
+      size: 12069063
+      nfiles: 18

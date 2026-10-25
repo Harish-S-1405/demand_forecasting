@@ -1,0 +1,25 @@
+# The weekly pipeline as DVC stages. `dvc repro` runs what needs running;
+# dvc.lock records the exact version (fingerprint) of every input and output.
+stages:
+  ingest:
+    cmd: python scripts/phase3_pipeline/ingest.py
+    deps:
+      - scripts/phase3_pipeline/ingest.py
+      - src/demandfcst/pipeline/ingest.py
+      - src/demandfcst/drops.py
+      - src/demandfcst/storage.py
+      - configs/data.toml
+    outs:
+      - data/raw:
+          persist: true
+    always_changed: true
+
+  process:
+    cmd: python scripts/phase3_pipeline/process.py
+    deps:
+      - data/raw
+      - scripts/phase3_pipeline/process.py
+      - src/demandfcst/pipeline
+      - configs/data.toml
+    outs:
+      - data/processed
