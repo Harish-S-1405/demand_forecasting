@@ -2,7 +2,7 @@
 
 # Where the landing area and generator files live: "local" or "s3".
 # Stays "local" until the history has been uploaded (S3.4).
-storage = "local"
+storage = "s3"
 
 [s3]
 bucket = "demandfcst-harish-1405"     # globally unique, lowercase
