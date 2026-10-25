@@ -2,6 +2,8 @@ import pandas as pd
 import pytest
 
 from demandfcst.synthetic import catalog, demand, landing, release, weather
+from demandfcst import storage
+
 
 SEED = 42
 HISTORY_END = pd.Timestamp("2024-12-29")
@@ -25,8 +27,9 @@ def run(s):
 
 
 def read_sales(root, ingest):
-    return pd.read_csv(landing.drop_dir(root, "sellin_daily", ingest) / "part.csv",
+    return pd.read_csv(storage.join(landing.drop_dir(root, "sellin_daily", ingest), "part.csv"),
                        dtype={"province": str, "sku_id": str}, parse_dates=["date"])
+
 
 
 def test_next_week_follows_a_sunday():
@@ -45,7 +48,8 @@ def test_each_run_appends_the_next_week(setup):
     sales = read_sales(setup["landing"], pd.Timestamp("2025-01-05"))
     assert len(sales) > 0
     assert sales["date"].between("2024-12-30", "2025-01-05").all()
-    wx = pd.read_csv(landing.drop_dir(setup["landing"], "weather_weekly", pd.Timestamp("2025-01-05")) / "part.csv")
+    wx = pd.read_csv(storage.join(landing.drop_dir(setup["landing"], "weather_weekly",
+                                                   pd.Timestamp("2025-01-05")), "part.csv"))
     assert len(wx) == 9
 
 
@@ -58,3 +62,15 @@ def test_released_week_matches_a_continuous_generation(setup):
     continuous, _ = demand.generate_daily(start, end, setup["cat"], wx, SEED)
     week = continuous[continuous["date"].between("2024-12-30", "2025-01-05")].reset_index(drop=True)
     pd.testing.assert_frame_equal(released, week, check_dtype=False)
+
+def test_release_works_on_an_object_store(tmp_path, fake_weather_source):
+    root = f"memory://{tmp_path.name}"                     # unique per test: memory:// is shared in-process
+    cat = catalog.build_catalog(SEED)
+    params = catalog.save_params(cat, f"{root}/generator/generator_params.json", seed=SEED,
+                                 history_start=pd.Timestamp("2021-01-01"), history_end=HISTORY_END)
+    landing.write_drop(pd.DataFrame(columns=["date", "province", "sku_id", "volume_hl"]),
+                       f"{root}/landing", "sellin_daily", HISTORY_END)
+
+    assert release.release_next_week(f"{root}/landing", f"{root}/truth", params,
+                                     fake_weather_source) == pd.Timestamp("2025-01-05")
+    assert len(read_sales(f"{root}/landing", pd.Timestamp("2025-01-05"))) > 0

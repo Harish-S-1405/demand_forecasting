@@ -1,0 +1,21 @@
+# Project data configuration, read with Python's built-in tomllib.
+
+# Where the landing area and generator files live: "local" or "s3".
+# Stays "local" until the history has been uploaded (S3.4).
+storage = "local"
+
+[s3]
+bucket = "demandfcst-harish-1405"     # globally unique, lowercase
+region = "ap-south-1"                        # the region you chose in S3.1
+
+# Where each area lives. Local paths are relative to the project folder;
+# "{bucket}" is replaced with the bucket name from [s3].
+[locations.local]
+landing = "landing"
+generator = "data/generator"
+truth = "data/truth"
+
+[locations.s3]
+landing = "s3://{bucket}/landing"
+generator = "s3://{bucket}/generator"
+truth = "s3://{bucket}/truth"

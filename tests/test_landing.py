@@ -10,9 +10,10 @@ INGEST = pd.Timestamp("2024-12-29")
 def test_write_drop_uses_contract_layout_and_iso_dates(tmp_path):
     df = pd.DataFrame({"date": pd.to_datetime(["2024-12-23"]), "province": ["SP"],
                        "sku_id": ["00123"], "volume_hl": [1.5]})
-    path = landing.write_drop(df, tmp_path, "sellin_daily", INGEST)
-    assert path == tmp_path / "sellin_daily" / "ingest_date=2024-12-29" / "part.csv"
-    raw = path.read_bytes()
+    location = landing.write_drop(df, tmp_path, "sellin_daily", INGEST)
+    assert location.endswith("sellin_daily/ingest_date=2024-12-29/part.csv")
+    with open(location, "rb") as f:
+        raw = f.read()
     assert raw.startswith(b"date,province,sku_id,volume_hl")         # header first: no BOM
     assert b"2024-12-23,SP,00123,1.5" in raw                          # ISO date, code kept as text
 

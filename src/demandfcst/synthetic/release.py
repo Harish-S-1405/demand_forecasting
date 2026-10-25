@@ -5,7 +5,8 @@ Each call continues from the latest sellin_daily drop, reuses the saved generato
 """
 
 import logging
-from pathlib import Path
+from demandfcst import storage
+
 
 import pandas as pd
 
@@ -20,9 +21,9 @@ PROMOS = "promotions"
 
 def drop_dates(root, dataset):
     """ingest_date of every drop of a dataset, oldest first."""
-    folder = Path(root) / dataset
-    return sorted(pd.Timestamp(p.name.split("=", 1)[1])
-                  for p in folder.glob("ingest_date=*") if p.is_dir())
+    names = storage.list_dirs(storage.join(root, dataset), "ingest_date=*")
+    return sorted(pd.Timestamp(name.split("=", 1)[1]) for name in names)
+
 
 
 def next_week(after):

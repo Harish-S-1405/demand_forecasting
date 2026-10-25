@@ -6,7 +6,7 @@ series and settings instead of drawing new ones.
 """
 
 import json
-from pathlib import Path
+from demandfcst import storage
 
 import numpy as np
 import pandas as pd
@@ -158,15 +158,15 @@ def save_params(catalog, path, *, seed, history_start, history_end):
             out[col] = out[col].dt.strftime("%Y-%m-%d")              # NaT -> null
         params[name] = json.loads(out.to_json(orient="records", force_ascii=False))
 
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(params, indent=2, ensure_ascii=False), encoding="utf-8")
-    return path
+
+    storage.write_text(path, json.dumps(params, indent=2, ensure_ascii=False))
+    return str(path)
+
 
 
 def load_params(path):
     """Read generator_params.json back into DataFrames. Returns (catalog, meta)."""
-    params = json.loads(Path(path).read_text(encoding="utf-8"))
+    params = json.loads(storage.read_text(path))
     catalog = {name: pd.DataFrame(params[name]) for name in ("provinces", "skus", "series")}
     for name, cols in DATE_COLUMNS.items():
         for col in cols:
