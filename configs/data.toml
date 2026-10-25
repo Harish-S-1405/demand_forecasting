@@ -25,3 +25,8 @@ truth = "s3://{bucket}/truth"
 raw = "data/raw"
 processed = "data/processed"
 
+# Facts about the sales extract.
+[extract]
+sales_start = "2021-01-01"     # first day covered by the history delivery
+
+

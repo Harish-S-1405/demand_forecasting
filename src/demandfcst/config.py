@@ -1,5 +1,6 @@
 """Project configuration (configs/data.toml)."""
 
+import pandas as pd
 import tomllib
 from pathlib import Path
 
@@ -30,3 +31,8 @@ def pipeline_paths(config=None):
     """Absolute local paths of the pipeline's working areas (raw, processed)."""
     config = config or load_config()
     return {area: (PROJECT_ROOT / rel).as_posix() for area, rel in config["pipeline"].items()}
+
+def sales_start(config=None):
+    """First day covered by the sales extract."""
+    config = config or load_config()
+    return pd.Timestamp(config["extract"]["sales_start"])

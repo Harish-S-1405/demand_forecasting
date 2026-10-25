@@ -1,6 +1,6 @@
-# Data Contract: Sell-in Sales (v1.2)
+# Data Contract: Sell-in Sales (v1.3)
 
-Status: v1.2, 2026-10-25
+Status: v1.3, 2026-10-25
 
 
 Producer: synthetic generator (`src/`), later replaced by the real sell-in extract
@@ -40,7 +40,11 @@ Primary key: (`province`, `sku_id`, `date`), with no duplicates.
 
 - Primary key: (`province`, `sku_id`, `week_start`).
 - Only **complete weeks** (all 7 days inside the delivered date range).
-- Zero-filled weeks only **between** a series' first and last active week.
+- Zero weeks are filled from a series' first week with sales to the last complete week
+  of the extract, or to its SKU's discontinuation week (sku_master) if that is earlier.
+  No rows before a series' first sale.
+- Built only from deduplicated daily data (latest drop wins).
+
 - Total volume must equal the daily total over the same days.
 
 ### 2.3 `province_master` (landing, full snapshot)
@@ -137,6 +141,8 @@ Real values up to 2024-10-28; synthetic (climate normal + variation) after that.
 - The real data must pass every rule above before it replaces the synthetic data.
 
 ## 7. Changelog
+- v1.3 (2026-10-25): sales_weekly zero-fills active series up to the latest complete week
+  (not just to their last sale); stops at discontinuation.
 - v1.2 (2026-10-25): later drops may restate earlier days (corrections); latest drop wins.
 - v1.1 (2026-10-25): `_SUCCESS` marker per drop; incomplete drops may be rewritten by the producer.
 - v1.0 (2026-10-24): first version.
