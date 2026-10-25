@@ -60,3 +60,9 @@ def remove(location):
     fs, path = fs_for(location)
     if fs.exists(path):
         fs.rm(path, recursive=True)
+
+def read_head(location, n):
+    """The first n bytes of a file (cheap, even on S3: only a small block is fetched)."""
+    fs, path = fs_for(location)
+    with fs.open(path, "rb", block_size=1024) as f:
+        return f.read(n)
