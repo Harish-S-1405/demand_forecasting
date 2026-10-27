@@ -8,7 +8,7 @@ Status: open → investigating → answered (links an insight) | parked (cannot 
 
 | ID | Question | Type | Raised in | Status | Outcome |
 |---|---|---|---|---|---|
-| Q-01 | Is the data complete, valid, consistent and timely? | planned | 4.1 | investigating | I-01, I-02, I-03, I-04, I-07 (completeness and validity done; consistency and timeliness to do) |
+| Q-01 | Is the data complete, valid, consistent and timely? | planned | 4.1 | investigating | I-01, I-02, I-03, I-04, I-07, I-08, I-09 (completeness, validity and consistency done; timeliness to do) |
 | Q-02 | Where is the volume, and how concentrated is it? | planned | 4.2 | open | |
 | Q-03 | What are the trend and seasonal shape by region, and are they stable? | planned | 4.3 | open | |
 | Q-04 | How do Carnival, Christmas and São João move sell-in, and when? | planned | 4.4 | open | |
@@ -20,4 +20,5 @@ Status: open → investigating → answered (links an insight) | parked (cannot 
 | Q-10 | Should a series' active life start at the data start (not its first sale) when the product existed before? Sparse series lose early zero weeks | emergent | 4.1 | answered | I-01 → pipeline fix PF-01 |
 | Q-11 | Why does RJ have more zero weeks (6.3%) than MG (1.3%) despite more volume? Wider assortment with more long-tail products? | emergent | 4.1 | answered | I-05: no, three high-volume kegs ordered in batches; the long-tail idea was rejected |
 | Q-12 | Is sparsity driven by container type (kegs) across all provinces, rather than by region or market size? | emergent | 4.1 | answered | I-06: both; container and market size add up |
-| Q-13 | Are the 10x weeks in steady series (RS Spaten 473 can, New Year 2024; RS Budweiser long neck, Dec 2023; SP Corona keg, Dec 2022) explained by summer peak + Christmas + a promotion, or are they data errors? | emergent | 4.1 | investigating | |
+| Q-13 | Are the 10x weeks in steady series (RS Spaten 473 can, New Year 2024; RS Budweiser long neck, Dec 2023; SP Corona keg, Dec 2022) explained by summer peak + Christmas + a promotion, or are they data errors? | emergent | 4.1 | answered | I-08: neither errors nor promotions; the series are erratic (every week, hugely variable size) |
+ 
